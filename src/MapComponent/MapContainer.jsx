@@ -4,94 +4,77 @@ import GoogleMapReact from 'google-map-react';
 import Marker from './MapValue';
 import { Container } from 'react-bootstrap';
 import LocationDetail from '../Details/LocDetail';
-const locations = [
-  {
-    name: "1",
-    location: {
-      lat: 41.3954,
-      lng: 2.162
-    },
-  },
-  {
-    name: "2",
-    location: {
-      lat: 41.3617,
-      lng: 2.1649
-    },
-  },
-  {
-    name: "3",
-    location: {
-      lat: 41.3773,
-      lng: 2.1585
-    },
-  },
-  {
-    name: "4",
-    location: {
-      lat: 41.3797,
-      lng: 2.1682
-    },
-  },
-  {
-    name: "5",
-    location: {
-      lat: 41.4055,
-      lng: 2.1915
-    },
-  }
-];
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../lib/init-firebase';
 
 const MapContainer = (props) => {
-  const [center, setCenter] = useState(locations[0].location);
-  const [zoom, setZoom] = useState(11);
-  const [location, setLocation] = useState(1);
-  const [locationData, setLocationData] = useState([]);
+  const [locations,setLocations]=useState([])
+    useEffect(()=>{
+      getLocations()
+    },[])
+    function getLocations(){
+      const locationsMarkers=collection(db,'locations-markers')
+      getDocs(locationsMarkers).then(response=>{
+        response.docs.map((doc)=>{
+          const locs=response.docs.map(doc=>({
+            data:doc.data(),
+            id:doc.id
+          }))
+          setLocations(locs)
+        })
+      })
+      .catch(error=>console.log(error))
+    }
+    const [center, setCenter] = useState({ 
+      lat: 41.3954,
+      lng: 2.162 
+    });
+    const [zoom, setZoom] = useState(11);
+    const [location, setLocation] = useState(1);
+    const [locationData, setLocationData] = useState([]);
 
-  useEffect(() => {
-    fetchData(location);
-  }, [location]);
-  const fetchData = async (location) => {
+    useEffect(() => {
+     console.log(locations)
+    }, [locations]);
+
+    useEffect(() => {
+      fetchData(location)    
+    }, [location]);
+
+   const fetchData = async (location) => {
     console.log(location)
-    let response = await (
-      await fetch(`https://jsonplaceholder.typicode.com/comments?postId=${location}`)
-    ).json();
-    setLocationData(response);
-    console.log(response)
-  };
-  const ClickedMarker = (val) => {
-    setLocation(val)
-  }
-  return (
-    <Container>
-      <div style={{ height: '40vh', width: '100%' }}>
-        <GoogleMapReact
+      let response = await (
+        await fetch(`https://jsonplaceholder.typicode.com/comments?postId=${location}`)
+      ).json();
+      setLocationData(response);
+      console.log(response)
+    };
+
+    const ClickedMarker=(val)=>{
+      setLocation(val)
+    }
+
+    return (
+       <Container>
+         <div style={{ height: '40vh', width: '100%' }}>
+        {locations && <GoogleMapReact
           bootstrapURLKeys={{ key: '' }}
           defaultCenter={center}
           defaultZoom={zoom}
         >
-          {
-            locations.map((item, i) => {
-              return (
-                <Marker key={i} lat={item.location.lat} lng={item.location.lng} text={item.name} ClickedMarker={ClickedMarker} />
-              )
-            })
-          }
-
-
-        </GoogleMapReact>
+        {
+          locations.map((item,i)=>{
+            return (
+              <Marker key={i} lat={item.data.location.lat} lng={item.data.location.lng} text={item.data.point} ClickedMarker={ClickedMarker}/>
+            )
+          })
+        }
+        </GoogleMapReact>}
       </div>
-      {/* <p>
-        {location}
-      </p>
-      <div>
-      {todo.map((item, i) => (
-        <p key={i}>{item.name}</p>
-      ))}
-    </div> */}
-      <LocationDetail title={location} locData={locationData} />
-    </Container>
-  );
+        <LocationDetail title={location} locData={locationData} />
+       </Container>
+
+    );
 }
 
 export default MapContainer;
