@@ -7,7 +7,7 @@ const LocationDetail = (props) => {
     return (
       <>
         <div className='loc-detail-container'>
-            <h1>{title}</h1>
+            <h1>Location {title}</h1>
             <div>
             {locData.map((item, i) => (
                 <Card className='loc-detail-card' key={i}>
