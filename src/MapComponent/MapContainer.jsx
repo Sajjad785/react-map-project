@@ -6,7 +6,8 @@ import { Container } from 'react-bootstrap';
 import LocationDetail from '../Details/LocDetail';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/init-firebase';
-
+import axios from 'axios';
+import SpinnerEffect from '../loader/spinner';
 const MapContainer = (props) => {
   const [locations,setLocations]=useState([])
     useEffect(()=>{
@@ -31,6 +32,7 @@ const MapContainer = (props) => {
     });
     const [zoom, setZoom] = useState(11);
     const [location, setLocation] = useState(1);
+    const [loading, setLoading] = useState(true);
     const [locationData, setLocationData] = useState([]);
 
     useEffect(() => {
@@ -38,17 +40,28 @@ const MapContainer = (props) => {
     }, [locations]);
 
     useEffect(() => {
-      fetchData(location)    
+      // fetchData(location)
+      const fetchData = async () =>{
+        setLoading(true);
+        try {
+          const {data: response} = await axios.get(`https://jsonplaceholder.typicode.com/comments?postId=${location}`);
+          setLocationData(response);
+        } catch (error) {
+          console.error(error.message);
+        }
+        setLoading(false);
+      }
+      fetchData();    
     }, [location]);
 
-   const fetchData = async (location) => {
-    console.log(location)
-      let response = await (
-        await fetch(`https://jsonplaceholder.typicode.com/comments?postId=${location}`)
-      ).json();
-      setLocationData(response);
-      console.log(response)
-    };
+  //  const fetchData = async (location) => {
+  //   console.log(location)
+  //     let response = await (
+  //       await fetch(`https://jsonplaceholder.typicode.com/comments?postId=${location}`)
+  //     ).json();
+  //     setLocationData(response);
+  //     console.log(response)
+  //   };
 
     const ClickedMarker=(val)=>{
       setLocation(val)
@@ -71,7 +84,9 @@ const MapContainer = (props) => {
         }
         </GoogleMapReact>}
       </div>
-        <LocationDetail title={location} locData={locationData} />
+        {loading && <SpinnerEffect />}
+       {!loading && locationData && <LocationDetail title={location} locData={locationData} />}
+      
        </Container>
 
     );

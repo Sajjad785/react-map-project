@@ -8,3 +8,18 @@
     box-shadow: 0 0.1rem 1rem rgb(0 0 0 / 10%);
 
 }
+.time-col{
+    padding: 1rem;
+    text-align: center;
+}
+.brand-img{
+    height: 50px;
+    margin-right: 10px;
+}
+.icon-info-col{
+    display: flex;
+}
+.card-row{
+    height: 100px;
+
+}
