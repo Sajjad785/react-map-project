@@ -8,6 +8,8 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/init-firebase';
 import axios from 'axios';
 import SpinnerEffect from '../loader/spinner';
+import '../App.css'
+
 const MapContainer = (props) => {
   const [locations,setLocations]=useState([])
     useEffect(()=>{
@@ -34,6 +36,7 @@ const MapContainer = (props) => {
     const [location, setLocation] = useState(1);
     const [loading, setLoading] = useState(true);
     const [locationData, setLocationData] = useState([]);
+    const [locationBlockData, setLocationBlockData] = useState([]);
 
     useEffect(() => {
      console.log(locations)
@@ -45,7 +48,10 @@ const MapContainer = (props) => {
         setLoading(true);
         try {
           const {data: response} = await axios.get(`https://jsonplaceholder.typicode.com/comments?postId=${location}`);
+          const {data: resp} = await axios.get(`https://jsonplaceholder.typicode.com/users?id=${location}`);
+          console.log('detail',resp)
           setLocationData(response);
+          setLocationBlockData(resp)
         } catch (error) {
           console.error(error.message);
         }
@@ -69,7 +75,7 @@ const MapContainer = (props) => {
 
     return (
        <Container>
-         <div style={{ height: '40vh', width: '100%' }}>
+         <div className='map-container'>
         {locations && <GoogleMapReact
           bootstrapURLKeys={{ key: '' }}
           defaultCenter={center}
@@ -85,7 +91,7 @@ const MapContainer = (props) => {
         </GoogleMapReact>}
       </div>
         {loading && <SpinnerEffect />}
-       {!loading && locationData && <LocationDetail title={location} locData={locationData} />}
+       {!loading && locationData && <LocationDetail block={locationBlockData} title={location} locData={locationData} />}
       
        </Container>
 
